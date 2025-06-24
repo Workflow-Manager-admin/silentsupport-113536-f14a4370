@@ -36,6 +36,7 @@ function TicketList({ tickets, onSelectTicket, loading }) {
     <div className="ticket-list">
       <div className="ticket-list-header">
         <span>Subject</span>
+        <span style={{ minWidth: 220 }}>Message Preview</span>
         <span>Status</span>
         <span style={{ minWidth: 110 }}>Created / Closed</span>
       </div>
@@ -48,6 +49,19 @@ function TicketList({ tickets, onSelectTicket, loading }) {
             aria-label={`View ticket: ${t.title}`}
           >
             <span className="ticket-subject">{t.title}</span>
+            <span
+              style={{
+                maxWidth: 400,
+                color: "var(--text-secondary)",
+                whiteSpace: "nowrap",
+                textOverflow: "ellipsis",
+                overflow: "hidden",
+                fontSize: "0.98rem",
+                display: "inline-block",
+              }}
+            >
+              {t.message ? (t.message.length > 84 ? t.message.slice(0, 84) + "…" : t.message) : ""}
+            </span>
             <span className={`ticket-status status-${getStatusClass(t)}`}>{getStatus(t)}</span>
             <span>
               {getLastUpdated(t)

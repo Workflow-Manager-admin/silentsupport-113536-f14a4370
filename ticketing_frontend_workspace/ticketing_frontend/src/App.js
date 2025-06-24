@@ -348,15 +348,84 @@ function App() {
             modalMode === "new"
               ? "Submit New Ticket"
               : selectedTicket
-              ? "Ticket Details"
-              : "Ticket"
+                ? "Ticket Details"
+                : "Ticket"
           }
         >
           {/* Render new ticket input fields when in "new" mode */}
           {modalMode === "new" && (
             <NewTicketForm onSubmit={handleSubmitTicket} onCancel={handleCloseModal} />
           )}
-          {/* Further extensions: handle details, edit, respond, close etc modes */}
+          {/* Render ticket details block when in "details" mode and have a selected ticket */}
+          {modalMode === "details" && selectedTicket && (
+            <div>
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontWeight: 600, fontSize: "1.17rem", marginBottom: 5 }}>
+                  {selectedTicket.title}
+                </div>
+                <div style={{
+                  color: "var(--text-secondary)",
+                  marginBottom: 8,
+                  fontSize: "1.02rem",
+                  whiteSpace: "pre-line"
+                }}>
+                  {selectedTicket.message}
+                </div>
+                <div style={{ marginTop: 6, fontSize: "0.99rem" }}>
+                  <span style={{ marginRight: 16 }}>
+                    <b>Status:</b> {selectedTicket.closed ? "Closed" : "Open"}
+                  </span>
+                  <span>
+                    <b>Created:</b> {selectedTicket.created_at ? new Date(selectedTicket.created_at).toLocaleString() : "-"}
+                  </span>
+                  {selectedTicket.closed && selectedTicket.closed_at && (
+                    <>
+                      <span style={{ marginLeft: 18 }}>
+                        <b>Closed:</b> {new Date(selectedTicket.closed_at).toLocaleString()}
+                      </span>
+                      {selectedTicket.close_reason && (
+                        <div style={{ color: "#de6b00", marginTop: 3, fontSize: "0.97rem" }}>
+                          <b>Close Reason: </b>{selectedTicket.close_reason}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+              {(selectedTicket.responses && selectedTicket.responses.length > 0) && (
+                <div style={{ marginTop: 18 }}>
+                  <div style={{
+                    fontWeight: 500,
+                    fontSize: "1.08rem",
+                    marginBottom: 4
+                  }}>
+                    Responses
+                  </div>
+                  <div>
+                    {selectedTicket.responses.map((resp, idx) => (
+                      <div key={idx} style={{
+                        padding: "10px 0",
+                        borderBottom: "1px solid var(--border-color)",
+                        color: "var(--text-secondary)"
+                      }}>
+                        <div>
+                          <b>{resp.responder || "Anonymous"}</b>{" "}
+                          <span style={{ fontSize: "0.92rem" }}>
+                            {resp.timestamp
+                              ? new Date(resp.timestamp).toLocaleString()
+                              : ""}
+                          </span>
+                        </div>
+                        <div style={{ marginTop: 2, whiteSpace: "pre-line" }}>
+                          {resp.message}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </TicketModal>
 
         {/* Global message (success/error) */}
