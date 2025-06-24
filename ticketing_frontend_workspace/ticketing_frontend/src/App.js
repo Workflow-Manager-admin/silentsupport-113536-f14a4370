@@ -56,6 +56,14 @@ function NewTicketForm({ onSubmit, onCancel }) {
       setStatus({ error: "Title and message are required." });
       return;
     }
+    if (form.title.length < 4 || form.title.length > 100) {
+      setStatus({ error: "Title must be between 4 and 100 characters." });
+      return;
+    }
+    if (form.message.length < 4 || form.message.length > 2000) {
+      setStatus({ error: "Message must be between 4 and 2000 characters." });
+      return;
+    }
     setStatus({ loading: true });
     await onSubmit(form, setStatus);
   };
@@ -82,7 +90,7 @@ function NewTicketForm({ onSubmit, onCancel }) {
             color: "var(--text-primary)",
             marginBottom: 5,
           }}
-          maxLength={140}
+          maxLength={100}
           required
         />
       </div>
@@ -106,7 +114,7 @@ function NewTicketForm({ onSubmit, onCancel }) {
             background: "#fafbfc",
             color: "var(--text-primary)",
           }}
-          maxLength={1000}
+          maxLength={2000}
           required
         />
       </div>
@@ -140,6 +148,125 @@ function NewTicketForm({ onSubmit, onCancel }) {
           disabled={status.loading}
         >
           {status.loading ? "Submitting…" : "Submit Ticket"}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+/**
+ * Controlled form for editing existing ticket (used in TicketModal)
+ */
+function EditTicketForm({ ticket, onSubmit, onCancel }) {
+  const [form, setForm] = useState({ 
+    title: ticket?.title || "", 
+    message: ticket?.message || "" 
+  });
+  const [status, setStatus] = useState({});
+  
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.title.trim() || !form.message.trim()) {
+      setStatus({ error: "Title and message are required." });
+      return;
+    }
+    if (form.title.length < 4 || form.title.length > 100) {
+      setStatus({ error: "Title must be between 4 and 100 characters." });
+      return;
+    }
+    if (form.message.length < 4 || form.message.length > 2000) {
+      setStatus({ error: "Message must be between 4 and 2000 characters." });
+      return;
+    }
+    setStatus({ loading: true });
+    await onSubmit(ticket.ticket_id, form, setStatus);
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      <div style={{ marginBottom: 18 }}>
+        <label htmlFor="edit-ticket-title" style={{ display: "block", marginBottom: 7, fontWeight: 500 }}>
+          Title <span style={{ color: "var(--primary)" }}>*</span>
+        </label>
+        <input
+          id="edit-ticket-title"
+          name="title"
+          type="text"
+          value={form.title}
+          onChange={handleChange}
+          disabled={status.loading}
+          style={{
+            width: "100%",
+            padding: "9px 12px",
+            fontSize: "1rem",
+            border: "1px solid var(--border-color)",
+            borderRadius: 5,
+            background: "#fafbfc",
+            color: "var(--text-primary)",
+            marginBottom: 5,
+          }}
+          maxLength={100}
+          required
+        />
+      </div>
+      <div style={{ marginBottom: 24 }}>
+        <label htmlFor="edit-ticket-message" style={{ display: "block", marginBottom: 7, fontWeight: 500 }}>
+          Description <span style={{ color: "var(--primary)" }}>*</span>
+        </label>
+        <textarea
+          id="edit-ticket-message"
+          name="message"
+          value={form.message}
+          onChange={handleChange}
+          disabled={status.loading}
+          style={{
+            width: "100%",
+            minHeight: 75,
+            padding: "9px 12px",
+            fontSize: "1rem",
+            border: "1px solid var(--border-color)",
+            borderRadius: 5,
+            background: "#fafbfc",
+            color: "var(--text-primary)",
+          }}
+          maxLength={2000}
+          required
+        />
+      </div>
+      {status.error && (
+        <div style={{ color: "#b51e1e", marginBottom: 14, fontWeight: 500 }}>{status.error}</div>
+      )}
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="btn"
+          style={{
+            background: "var(--secondary)",
+            color: "#fff",
+            minWidth: 90,
+          }}
+          disabled={status.loading}
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="btn"
+          style={{
+            background: "var(--primary)",
+            color: "#fff",
+            minWidth: 120,
+            fontWeight: 700,
+            opacity: status.loading ? 0.74 : 1,
+          }}
+          disabled={status.loading}
+        >
+          {status.loading ? "Saving…" : "Save Changes"}
         </button>
       </div>
     </form>
@@ -214,6 +341,9 @@ function App() {
     } catch (err) {
       setSelectedTicket(ticket); // fallback
     }
+  };
+  const handleEditTicket = () => {
+    setModalMode("edit");
   };
   const handleCloseModal = () => {
     setModalOpen(false);
@@ -347,9 +477,11 @@ function App() {
           title={
             modalMode === "new"
               ? "Submit New Ticket"
-              : selectedTicket
-                ? "Ticket Details"
-                : "Ticket"
+              : modalMode === "edit"
+                ? "Edit Ticket"
+                : selectedTicket
+                  ? "Ticket Details"
+                  : "Ticket"
           }
         >
           {/* Render new ticket input fields when in "new" mode */}
@@ -388,6 +520,24 @@ function App() {
                     </>
                   )}
                 </div>
+                {/* Edit button - only show for open tickets */}
+                {!selectedTicket.closed && (
+                  <div className="ticket-details-actions">
+                    <button
+                      className="btn"
+                      onClick={handleEditTicket}
+                      style={{
+                        background: "var(--accent)",
+                        color: "#fff",
+                        marginTop: 16,
+                        fontSize: "0.95rem",
+                        padding: "8px 16px",
+                      }}
+                    >
+                      ✏️ Edit Ticket
+                    </button>
+                  </div>
+                )}
               </section>
               {(selectedTicket.responses && selectedTicket.responses.length > 0) && (
                 <section className="ticket-responses-section">
@@ -412,6 +562,14 @@ function App() {
                 </section>
               )}
             </div>
+          )}
+          {/* Render edit form when in "edit" mode and have a selected ticket */}
+          {modalMode === "edit" && selectedTicket && (
+            <EditTicketForm
+              ticket={selectedTicket}
+              onSubmit={handleUpdateTicket}
+              onCancel={() => setModalMode("details")}
+            />
           )}
         </TicketModal>
 

@@ -218,6 +218,14 @@
   margin-top: 2px;
   padding-left: 5px;
 }
+.ticket-details-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+}
 
 /* Ticket Responses log/list */
 .ticket-responses-section {
