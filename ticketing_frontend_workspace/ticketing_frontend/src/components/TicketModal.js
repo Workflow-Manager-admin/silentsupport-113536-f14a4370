@@ -2,13 +2,13 @@ import React from "react";
 
 // PUBLIC_INTERFACE
 /**
- * Modal for ticket submission/details/updates; blank until API integration.
- * 
+ * Modal for ticket submission/details/updates with polished layout and proper styling.
+ *
  * @param {object} props
  * @param {boolean} props.open - show/hide
  * @param {function} props.onClose - called to close modal
- * @param {React.ReactNode} props.children
- * @param {string} props.title
+ * @param {string} props.title - modal header
+ * @param {React.ReactNode} props.children - modal body/content
  */
 function TicketModal({ open, onClose, title, children }) {
   if (!open) return null;
@@ -17,9 +17,17 @@ function TicketModal({ open, onClose, title, children }) {
       <div className="modal" role="dialog" aria-modal="true">
         <header className="modal-header">
           <div>{title}</div>
-          <button className="modal-close" onClick={onClose} aria-label="Close">✕</button>
+          <button
+            className="modal-close"
+            onClick={onClose}
+            aria-label="Close"
+            tabIndex={0}
+          >✕</button>
         </header>
-        <section className="modal-content">{children}</section>
+        <section className="modal-content">
+          {children}
+        </section>
+        {/* Future: <footer className="modal-actions">{actions}</footer> */}
       </div>
     </div>
   );
