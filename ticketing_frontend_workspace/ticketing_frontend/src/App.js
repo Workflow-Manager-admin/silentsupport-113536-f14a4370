@@ -41,6 +41,111 @@ async function fetchJSON(url, options = {}) {
 /**
  * Main entry point: Ticketing Frontend App
  */
+/**
+ * Controlled form for new ticket submission (used in TicketModal)
+ */
+function NewTicketForm({ onSubmit, onCancel }) {
+  const [form, setForm] = useState({ title: "", message: "" });
+  const [status, setStatus] = useState({});
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.title.trim() || !form.message.trim()) {
+      setStatus({ error: "Title and message are required." });
+      return;
+    }
+    setStatus({ loading: true });
+    await onSubmit(form, setStatus);
+  };
+  return (
+    <form onSubmit={handleSubmit}>
+      <div style={{ marginBottom: 18 }}>
+        <label htmlFor="ticket-title" style={{ display: "block", marginBottom: 7, fontWeight: 500 }}>
+          Title <span style={{ color: "var(--primary)" }}>*</span>
+        </label>
+        <input
+          id="ticket-title"
+          name="title"
+          type="text"
+          value={form.title}
+          onChange={handleChange}
+          disabled={status.loading}
+          style={{
+            width: "100%",
+            padding: "9px 12px",
+            fontSize: "1rem",
+            border: "1px solid var(--border-color)",
+            borderRadius: 5,
+            background: "#fafbfc",
+            color: "var(--text-primary)",
+            marginBottom: 5,
+          }}
+          maxLength={140}
+          required
+        />
+      </div>
+      <div style={{ marginBottom: 24 }}>
+        <label htmlFor="ticket-message" style={{ display: "block", marginBottom: 7, fontWeight: 500 }}>
+          Description <span style={{ color: "var(--primary)" }}>*</span>
+        </label>
+        <textarea
+          id="ticket-message"
+          name="message"
+          value={form.message}
+          onChange={handleChange}
+          disabled={status.loading}
+          style={{
+            width: "100%",
+            minHeight: 75,
+            padding: "9px 12px",
+            fontSize: "1rem",
+            border: "1px solid var(--border-color)",
+            borderRadius: 5,
+            background: "#fafbfc",
+            color: "var(--text-primary)",
+          }}
+          maxLength={1000}
+          required
+        />
+      </div>
+      {status.error && (
+        <div style={{ color: "#b51e1e", marginBottom: 14, fontWeight: 500 }}>{status.error}</div>
+      )}
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="btn"
+          style={{
+            background: "var(--secondary)",
+            color: "#fff",
+            minWidth: 90,
+          }}
+          disabled={status.loading}
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="btn"
+          style={{
+            background: "var(--primary)",
+            color: "#fff",
+            minWidth: 120,
+            fontWeight: 700,
+            opacity: status.loading ? 0.74 : 1,
+          }}
+          disabled={status.loading}
+        >
+          {status.loading ? "Submitting…" : "Submit Ticket"}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 function App() {
   // TICKET STATE
   const [tickets, setTickets] = useState([]);
@@ -238,13 +343,13 @@ function App() {
               ? "Ticket Details"
               : "Ticket"
           }
-          ticket={selectedTicket}
-          mode={modalMode}
-          onSubmit={handleSubmitTicket}
-          onUpdate={handleUpdateTicket}
-          onAddResponse={handleAddResponse}
-          onCloseTicket={handleCloseTicket}
-        />
+        >
+          {/* Render new ticket input fields when in "new" mode */}
+          {modalMode === "new" && (
+            <NewTicketForm onSubmit={handleSubmitTicket} onCancel={handleCloseModal} />
+          )}
+          {/* Further extensions: handle details, edit, respond, close etc modes */}
+        </TicketModal>
 
         {/* Global message (success/error) */}
         {globalMessage && (
