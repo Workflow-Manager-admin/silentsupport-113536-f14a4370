@@ -273,6 +273,205 @@ function EditTicketForm({ ticket, onSubmit, onCancel }) {
   );
 }
 
+/**
+ * Controlled form for adding a response to a ticket (used in TicketModal)
+ */
+function AddResponseForm({ ticket, onSubmit, onCancel }) {
+  const [form, setForm] = useState({ 
+    responder: "User", 
+    message: "" 
+  });
+  const [status, setStatus] = useState({});
+  
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.message.trim()) {
+      setStatus({ error: "Response message is required." });
+      return;
+    }
+    if (form.message.length < 1 || form.message.length > 2000) {
+      setStatus({ error: "Response must be between 1 and 2000 characters." });
+      return;
+    }
+    setStatus({ loading: true });
+    await onSubmit(ticket.ticket_id, form, setStatus);
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      <div style={{ marginBottom: 18 }}>
+        <label htmlFor="response-responder" style={{ display: "block", marginBottom: 7, fontWeight: 500 }}>
+          Your Name
+        </label>
+        <input
+          id="response-responder"
+          name="responder"
+          type="text"
+          value={form.responder}
+          onChange={handleChange}
+          disabled={status.loading}
+          style={{
+            width: "100%",
+            padding: "9px 12px",
+            fontSize: "1rem",
+            border: "1px solid var(--border-color)",
+            borderRadius: 5,
+            background: "#fafbfc",
+            color: "var(--text-primary)",
+            marginBottom: 5,
+          }}
+          maxLength={100}
+        />
+      </div>
+      <div style={{ marginBottom: 24 }}>
+        <label htmlFor="response-message" style={{ display: "block", marginBottom: 7, fontWeight: 500 }}>
+          Response <span style={{ color: "var(--primary)" }}>*</span>
+        </label>
+        <textarea
+          id="response-message"
+          name="message"
+          value={form.message}
+          onChange={handleChange}
+          disabled={status.loading}
+          placeholder="Type your response here..."
+          style={{
+            width: "100%",
+            minHeight: 100,
+            padding: "9px 12px",
+            fontSize: "1rem",
+            border: "1px solid var(--border-color)",
+            borderRadius: 5,
+            background: "#fafbfc",
+            color: "var(--text-primary)",
+          }}
+          maxLength={2000}
+          required
+        />
+      </div>
+      {status.error && (
+        <div style={{ color: "#b51e1e", marginBottom: 14, fontWeight: 500 }}>{status.error}</div>
+      )}
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="btn"
+          style={{
+            background: "var(--secondary)",
+            color: "#fff",
+            minWidth: 90,
+          }}
+          disabled={status.loading}
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="btn"
+          style={{
+            background: "var(--primary)",
+            color: "#fff",
+            minWidth: 120,
+            fontWeight: 700,
+            opacity: status.loading ? 0.74 : 1,
+          }}
+          disabled={status.loading}
+        >
+          {status.loading ? "Sending…" : "Add Response"}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+/**
+ * Controlled form for closing a ticket (used in TicketModal)
+ */
+function CloseTicketForm({ ticket, onSubmit, onCancel }) {
+  const [form, setForm] = useState({ 
+    close_reason: "" 
+  });
+  const [status, setStatus] = useState({});
+  
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus({ loading: true });
+    await onSubmit(ticket.ticket_id, form.close_reason, setStatus);
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      <div style={{ marginBottom: 24 }}>
+        <p style={{ color: "var(--text-secondary)", marginBottom: 16 }}>
+          Are you sure you want to close this ticket? This action cannot be undone.
+        </p>
+        <label htmlFor="close-reason" style={{ display: "block", marginBottom: 7, fontWeight: 500 }}>
+          Close Reason (Optional)
+        </label>
+        <textarea
+          id="close-reason"
+          name="close_reason"
+          value={form.close_reason}
+          onChange={handleChange}
+          disabled={status.loading}
+          placeholder="Briefly explain why this ticket is being closed..."
+          style={{
+            width: "100%",
+            minHeight: 75,
+            padding: "9px 12px",
+            fontSize: "1rem",
+            border: "1px solid var(--border-color)",
+            borderRadius: 5,
+            background: "#fafbfc",
+            color: "var(--text-primary)",
+          }}
+          maxLength={500}
+        />
+      </div>
+      {status.error && (
+        <div style={{ color: "#b51e1e", marginBottom: 14, fontWeight: 500 }}>{status.error}</div>
+      )}
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="btn"
+          style={{
+            background: "var(--secondary)",
+            color: "#fff",
+            minWidth: 90,
+          }}
+          disabled={status.loading}
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="btn"
+          style={{
+            background: "var(--error-color)",
+            color: "#fff",
+            minWidth: 120,
+            fontWeight: 700,
+            opacity: status.loading ? 0.74 : 1,
+          }}
+          disabled={status.loading}
+        >
+          {status.loading ? "Closing…" : "Close Ticket"}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 function App() {
   // TICKET STATE
   const [tickets, setTickets] = useState([]);
@@ -344,6 +543,12 @@ function App() {
   };
   const handleEditTicket = () => {
     setModalMode("edit");
+  };
+  const handleRespondTicket = () => {
+    setModalMode("respond");
+  };
+  const handleCloseTicketModal = () => {
+    setModalMode("close");
   };
   const handleCloseModal = () => {
     setModalOpen(false);
@@ -479,6 +684,10 @@ function App() {
               ? "Submit New Ticket"
               : modalMode === "edit"
                 ? "Edit Ticket"
+              : modalMode === "respond"
+                ? "Add Response"
+              : modalMode === "close"
+                ? "Close Ticket"
                 : selectedTicket
                   ? "Ticket Details"
                   : "Ticket"
@@ -520,7 +729,7 @@ function App() {
                     </>
                   )}
                 </div>
-                {/* Edit button - only show for open tickets */}
+                {/* Action buttons - only show for open tickets */}
                 {!selectedTicket.closed && (
                   <div className="ticket-details-actions">
                     <button
@@ -535,6 +744,32 @@ function App() {
                       }}
                     >
                       ✏️ Edit Ticket
+                    </button>
+                    <button
+                      className="btn"
+                      onClick={handleRespondTicket}
+                      style={{
+                        background: "var(--primary)",
+                        color: "#fff",
+                        marginTop: 16,
+                        fontSize: "0.95rem",
+                        padding: "8px 16px",
+                      }}
+                    >
+                      💬 Add Response
+                    </button>
+                    <button
+                      className="btn"
+                      onClick={handleCloseTicketModal}
+                      style={{
+                        background: "var(--error-color)",
+                        color: "#fff",
+                        marginTop: 16,
+                        fontSize: "0.95rem",
+                        padding: "8px 16px",
+                      }}
+                    >
+                      🔒 Close Ticket
                     </button>
                   </div>
                 )}
@@ -568,6 +803,22 @@ function App() {
             <EditTicketForm
               ticket={selectedTicket}
               onSubmit={handleUpdateTicket}
+              onCancel={() => setModalMode("details")}
+            />
+          )}
+          {/* Render response form when in "respond" mode and have a selected ticket */}
+          {modalMode === "respond" && selectedTicket && (
+            <AddResponseForm
+              ticket={selectedTicket}
+              onSubmit={handleAddResponse}
+              onCancel={() => setModalMode("details")}
+            />
+          )}
+          {/* Render close form when in "close" mode and have a selected ticket */}
+          {modalMode === "close" && selectedTicket && (
+            <CloseTicketForm
+              ticket={selectedTicket}
+              onSubmit={handleCloseTicket}
               onCancel={() => setModalMode("details")}
             />
           )}
