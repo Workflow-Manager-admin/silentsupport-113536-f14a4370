@@ -472,6 +472,78 @@ function CloseTicketForm({ ticket, onSubmit, onCancel }) {
   );
 }
 
+/**
+ * Controlled form for deleting a ticket (used in TicketModal)
+ */
+function DeleteTicketForm({ ticket, onSubmit, onCancel }) {
+  const [status, setStatus] = useState({});
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus({ loading: true });
+    await onSubmit(ticket.ticket_id, setStatus);
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      <div style={{ marginBottom: 24 }}>
+        <p style={{ color: "var(--error-color)", marginBottom: 16, fontWeight: 500 }}>
+          ⚠️ Warning: This will permanently delete the ticket from your view.
+        </p>
+        <p style={{ color: "var(--text-secondary)", marginBottom: 16 }}>
+          Are you sure you want to delete this ticket? This action cannot be undone and will remove the ticket from your local view.
+        </p>
+        <div style={{ 
+          background: "#fff3f3", 
+          border: "1px solid #fecaca", 
+          borderRadius: 6, 
+          padding: "12px 16px",
+          marginBottom: 16
+        }}>
+          <p style={{ margin: 0, color: "var(--text-primary)", fontWeight: 500 }}>
+            Ticket: {ticket.title}
+          </p>
+          <p style={{ margin: "4px 0 0 0", color: "var(--text-secondary)", fontSize: "0.9rem" }}>
+            Created: {ticket.created_at ? new Date(ticket.created_at).toLocaleString() : "Unknown"}
+          </p>
+        </div>
+      </div>
+      {status.error && (
+        <div style={{ color: "#b51e1e", marginBottom: 14, fontWeight: 500 }}>{status.error}</div>
+      )}
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="btn"
+          style={{
+            background: "var(--secondary)",
+            color: "#fff",
+            minWidth: 90,
+          }}
+          disabled={status.loading}
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="btn"
+          style={{
+            background: "#dc2626",
+            color: "#fff",
+            minWidth: 120,
+            fontWeight: 700,
+            opacity: status.loading ? 0.74 : 1,
+          }}
+          disabled={status.loading}
+        >
+          {status.loading ? "Deleting…" : "🗑️ Delete Ticket"}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 function App() {
   // TICKET STATE
   const [tickets, setTickets] = useState([]);
@@ -485,7 +557,7 @@ function App() {
   // MODAL / SELECT STATE
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null); // (ticket object)
-  const [modalMode, setModalMode] = useState("new"); // "new", "details", "edit", "respond", "close"
+  const [modalMode, setModalMode] = useState("new"); // "new", "details", "edit", "respond", "close", "delete"
 
   // GLOBAL/CONFIRM STATE
   const [globalMessage, setGlobalMessage] = useState(null);
@@ -549,6 +621,9 @@ function App() {
   };
   const handleCloseTicketModal = () => {
     setModalMode("close");
+  };
+  const handleDeleteTicketModal = () => {
+    setModalMode("delete");
   };
   const handleCloseModal = () => {
     setModalOpen(false);
@@ -635,6 +710,21 @@ function App() {
     }
   };
 
+  // Ticket delete (client-side only - removes from state)
+  const handleDeleteTicket = async (ticketId, onStatus) => {
+    onStatus({ loading: true });
+    try {
+      // Since there's no backend DELETE endpoint, we'll just remove from local state
+      // This is a client-side delete that persists until page refresh
+      setTickets(prevTickets => prevTickets.filter(ticket => ticket.ticket_id !== ticketId));
+      setGlobalMessage("Ticket deleted from view");
+      handleCloseModal();
+      onStatus({ loading: false, success: true });
+    } catch (err) {
+      onStatus({ loading: false, error: "Delete failed" });
+    }
+  };
+
   // Display global message (confirmation/error) for a short time
   useEffect(() => {
     if (!globalMessage) return;
@@ -688,6 +778,8 @@ function App() {
                 ? "Add Response"
               : modalMode === "close"
                 ? "Close Ticket"
+              : modalMode === "delete"
+                ? "Delete Ticket"
                 : selectedTicket
                   ? "Ticket Details"
                   : "Ticket"
@@ -771,6 +863,19 @@ function App() {
                     >
                       🔒 Close Ticket
                     </button>
+                    <button
+                      className="btn"
+                      onClick={handleDeleteTicketModal}
+                      style={{
+                        background: "#dc2626",
+                        color: "#fff",
+                        marginTop: 16,
+                        fontSize: "0.95rem",
+                        padding: "8px 16px",
+                      }}
+                    >
+                      🗑️ Delete Ticket
+                    </button>
                   </div>
                 )}
               </section>
@@ -819,6 +924,14 @@ function App() {
             <CloseTicketForm
               ticket={selectedTicket}
               onSubmit={handleCloseTicket}
+              onCancel={() => setModalMode("details")}
+            />
+          )}
+          {/* Render delete form when in "delete" mode and have a selected ticket */}
+          {modalMode === "delete" && selectedTicket && (
+            <DeleteTicketForm
+              ticket={selectedTicket}
+              onSubmit={handleDeleteTicket}
               onCancel={() => setModalMode("details")}
             />
           )}
