@@ -5,9 +5,15 @@ import Sidebar from "./components/Sidebar";
 import Dashboard from "./components/Dashboard";
 import TicketModal from "./components/TicketModal";
 
-// API base URL for FastAPI backend
+/**
+ * API base URL for FastAPI backend.
+ * In browser environments, process.env is undefined unless replaced by a bundler.
+ * To avoid ReferenceError, use a safe fallback.
+ */
 const API_BASE =
-  process.env.REACT_APP_API_BASE || "https://vscode-internal-788600-beta.beta01.cloud.kavia.ai:3001";
+  (typeof process !== "undefined" && process.env && process.env.REACT_APP_API_BASE)
+    ? process.env.REACT_APP_API_BASE
+    : "https://vscode-internal-788600-beta.beta01.cloud.kavia.ai:3001";
 
 // Helper function to fetch JSON (handles non-2xx HTTP as errors)
 async function fetchJSON(url, options = {}) {
