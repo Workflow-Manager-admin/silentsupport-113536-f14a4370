@@ -1,5 +1,5 @@
 :root {
-  /* THEME COLORS */
+  /* THEME COLORS - Light Modern Theme */
   --primary: #1976d2;
   --secondary: #424242;
   --accent: #ffb300;
@@ -9,20 +9,22 @@
   --text-secondary: #555c64;
   --border-color: #e0e0e0;
   --shadow: 0 3px 20px 0 rgba(60,60,65,0.07);
-
-  /* legacy/fallback */
-  --base-light: #00ffff;
-  --base-dark: #00008b;
-  --text-color: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --border-color: rgba(255, 255, 255, 0.1);
+  
+  /* Success and error colors */
+  --success-color: #2e7d32;
+  --error-color: #d32f2f;
+  
+  /* Hover and focus states */
+  --primary-hover: #1565c0;
+  --accent-hover: #ff8f00;
+  --surface-hover: #f5f5f5;
 }
 
 body {
   margin: 0;
   font-family: 'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif;
-  background-color: var(--base-dark);
-  color: var(--text-color);
+  background-color: var(--background);
+  color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -34,7 +36,7 @@ body {
 }
 
 .navbar {
-  background-color: var(--base-dark);
+  background-color: var(--background);
   padding: 16px;
   display: flex;
   align-items: center;
@@ -53,10 +55,11 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  color: var(--primary);
 }
 
 .logo-symbol {
-  color: var(--base-light);
+  color: var(--accent);
 }
 
 .container {
@@ -78,7 +81,7 @@ body {
 }
 
 .subtitle {
-  color: var(--base-light);
+  color: var(--primary);
   font-weight: 500;
   font-size: 1.1rem;
 }
@@ -88,6 +91,7 @@ body {
   font-weight: 600;
   line-height: 1.2;
   margin: 0;
+  color: var(--text-primary);
 }
 
 .description {
@@ -99,19 +103,27 @@ body {
 }
 
 .btn {
-  background-color: var(--base-light);
-  color: white;
+  background-color: var(--primary);
+  color: #ffffff;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   padding: 10px 20px;
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .btn:hover {
-  background-color: #7691ff;
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.btn:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .btn-large {

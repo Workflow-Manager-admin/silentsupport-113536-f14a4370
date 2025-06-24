@@ -11,7 +11,7 @@ import React from "react";
  */
 function TicketList({ tickets, onSelectTicket, loading }) {
   if (loading) {
-    return <div style={{ padding: 24 }}>Loading tickets…</div>;
+    return <div style={{ padding: 24, color: "var(--text-primary)" }}>Loading tickets…</div>;
   }
   if (!tickets || !tickets.length) {
     return <div style={{ padding: 24, color: "var(--text-secondary)" }}>No tickets yet.</div>;
@@ -63,7 +63,7 @@ function TicketList({ tickets, onSelectTicket, loading }) {
               {t.message ? (t.message.length > 84 ? t.message.slice(0, 84) + "…" : t.message) : ""}
             </span>
             <span className={`ticket-status status-${getStatusClass(t)}`}>{getStatus(t)}</span>
-            <span>
+            <span style={{ color: "var(--text-secondary)", fontSize: "0.95rem" }}>
               {getLastUpdated(t)
                 ? new Date(getLastUpdated(t)).toLocaleString()
                 : ""}
