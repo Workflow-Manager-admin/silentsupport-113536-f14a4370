@@ -382,3 +382,45 @@ def close_ticket(ticket_id: str, close: TicketClose, db: Session = Depends(get_d
         close_reason=ticket.close_reason,
         responses=responses
     )
+
+
+# PUBLIC_INTERFACE
+@app.delete(
+    "/tickets/{ticket_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    tags=["tickets"],
+    summary="Delete a ticket permanently"
+)
+def delete_ticket(ticket_id: str, db: Session = Depends(get_db)):
+    """
+    Permanently delete a ticket and all its associated responses from the database.
+
+    - **ticket_id**: Ticket identifier
+
+    Returns 204 No Content on successful deletion.
+    Raises 404 if ticket does not exist.
+    """
+    try:
+        # Find the ticket in the database
+        ticket = db.query(TicketDB).filter(TicketDB.ticket_id == ticket_id).first()
+
+        if ticket is None:
+            raise HTTPException(status_code=404, detail="Ticket not found")
+
+        # Delete the ticket (responses will be deleted automatically due to cascade)
+        db.delete(ticket)
+        db.commit()
+
+        # Return 204 No Content (no response body needed)
+        return None
+
+    except HTTPException:
+        # Re-raise HTTP exceptions (like 404)
+        raise
+    except Exception as e:
+        # Handle any database errors
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Database error occurred while deleting ticket: {str(e)}"
+        )
