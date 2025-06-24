@@ -37,6 +37,33 @@ async function fetchJSON(url, options = {}) {
   return await resp.json();
 }
 
+// Helper function specifically for DELETE operations that may return 204 No Content
+async function fetchDelete(url, options = {}) {
+  const resp = await fetch(url, {
+    ...options,
+    headers: {
+      ...(options && options.headers ? options.headers : {}),
+      "Content-Type": "application/json",
+    },
+  });
+  if (!resp.ok) {
+    const reason = await resp.text();
+    let body;
+    try {
+      body = JSON.parse(reason);
+    } catch {
+      body = { error: reason || resp.statusText, status: resp.status };
+    }
+    throw body;
+  }
+  // For 204 No Content, return null (successful deletion with no response body)
+  if (resp.status === 204) {
+    return null;
+  }
+  // For other successful responses, try to parse JSON
+  return await resp.json();
+}
+
 // PUBLIC_INTERFACE
 /**
  * Main entry point: Ticketing Frontend App
@@ -714,7 +741,7 @@ function App() {
   const handleDeleteTicket = async (ticketId, onStatus) => {
     onStatus({ loading: true });
     try {
-      await fetchJSON(`${API_BASE}/tickets/${ticketId}`, {
+      await fetchDelete(`${API_BASE}/tickets/${ticketId}`, {
         method: "DELETE",
       });
       setGlobalMessage("Ticket permanently deleted");
