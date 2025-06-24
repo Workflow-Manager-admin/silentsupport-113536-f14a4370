@@ -170,8 +170,16 @@ function App() {
     setTicketsError(null);
     try {
       const data = await fetchJSON(`${API_BASE}/tickets`);
-      // sort by newest
-      setTickets(data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
+      // sort by newest, normalize structure for UI (maintain canonical backend fields)
+      setTickets(
+        data
+          .map((ticket) => ({
+            ...ticket,
+            // Ensure any derived fields (if needed for UI) can be set here
+            // Examples: status: ticket.closed ? "Closed" : "Open"
+          }))
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      );
     } catch (err) {
       setTicketsError(err && err.error ? err.error : "Failed to load tickets");
     }

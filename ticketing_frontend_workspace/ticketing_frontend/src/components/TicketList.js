@@ -16,26 +16,46 @@ function TicketList({ tickets, onSelectTicket, loading }) {
   if (!tickets || !tickets.length) {
     return <div style={{ padding: 24, color: "var(--text-secondary)" }}>No tickets yet.</div>;
   }
+
+  // Helper to get status and visual for ticket
+  function getStatus(t) {
+    if (t.closed) return "Closed";
+    return "Open";
+  }
+  function getStatusClass(t) {
+    return t.closed ? "closed" : "open";
+  }
+  function getLastUpdated(t) {
+    // Prefer closed_at, fallback to created_at, fallback to blank
+    if (t.closed && t.closed_at) return t.closed_at;
+    // You might wish to show latest response time if present, but for now: created_at.
+    return t.created_at || "";
+  }
+
   return (
     <div className="ticket-list">
       <div className="ticket-list-header">
         <span>Subject</span>
         <span>Status</span>
-        <span style={{ minWidth: 110 }}>Last Updated</span>
+        <span style={{ minWidth: 110 }}>Created / Closed</span>
       </div>
       <div className="ticket-list-body">
-        {tickets.map(t =>
+        {tickets.map((t) => (
           <button
             className="ticket-row"
-            key={t.id}
+            key={t.ticket_id}
             onClick={() => onSelectTicket(t)}
-            aria-label={`View ticket: ${t.subject}`}
+            aria-label={`View ticket: ${t.title}`}
           >
-            <span className="ticket-subject">{t.subject}</span>
-            <span className={`ticket-status status-${t.status}`}>{t.status}</span>
-            <span>{new Date(t.updated_at).toLocaleString()}</span>
+            <span className="ticket-subject">{t.title}</span>
+            <span className={`ticket-status status-${getStatusClass(t)}`}>{getStatus(t)}</span>
+            <span>
+              {getLastUpdated(t)
+                ? new Date(getLastUpdated(t)).toLocaleString()
+                : ""}
+            </span>
           </button>
-        )}
+        ))}
       </div>
     </div>
   );
