@@ -488,10 +488,10 @@ function DeleteTicketForm({ ticket, onSubmit, onCancel }) {
     <form onSubmit={handleSubmit}>
       <div style={{ marginBottom: 24 }}>
         <p style={{ color: "var(--error-color)", marginBottom: 16, fontWeight: 500 }}>
-          ⚠️ Warning: This will permanently delete the ticket from your view.
+          ⚠️ Warning: This will permanently delete the ticket from the database.
         </p>
         <p style={{ color: "var(--text-secondary)", marginBottom: 16 }}>
-          Are you sure you want to delete this ticket? This action cannot be undone and will remove the ticket from your local view.
+          Are you sure you want to delete this ticket? This action cannot be undone and will permanently remove the ticket and all its responses from the system.
         </p>
         <div style={{ 
           background: "#fff3f3", 
@@ -710,18 +710,19 @@ function App() {
     }
   };
 
-  // Ticket delete (client-side only - removes from state)
+  // Ticket delete (permanent backend deletion)
   const handleDeleteTicket = async (ticketId, onStatus) => {
     onStatus({ loading: true });
     try {
-      // Since there's no backend DELETE endpoint, we'll just remove from local state
-      // This is a client-side delete that persists until page refresh
-      setTickets(prevTickets => prevTickets.filter(ticket => ticket.ticket_id !== ticketId));
-      setGlobalMessage("Ticket deleted from view");
+      await fetchJSON(`${API_BASE}/tickets/${ticketId}`, {
+        method: "DELETE",
+      });
+      setGlobalMessage("Ticket permanently deleted");
       handleCloseModal();
+      await loadTickets(); // refresh the ticket list from backend
       onStatus({ loading: false, success: true });
     } catch (err) {
-      onStatus({ loading: false, error: "Delete failed" });
+      onStatus({ loading: false, error: err && err.error ? err.error : "Delete failed" });
     }
   };
 
